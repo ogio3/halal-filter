@@ -190,7 +190,7 @@ pub struct BlockStats {
 /// `allow()`/`disallow()` are called from the UI thread via JNI.
 pub struct FilterEngine {
     blocklist: BlocklistFilter,
-    allowlist: RwLock<HashSet<u64>>,
+    allowlist: RwLock<HashSet<String>>,
     total_queries: AtomicU64,
     blocked_queries: AtomicU64,
     blocked_domain_counts: std::sync::Mutex<HashMap<String, u64>>,
@@ -212,14 +212,14 @@ impl FilterEngine {
     /// Thread-safe: acquires write lock.
     pub fn allow(&self, domain: &str) {
         let mut set = self.allowlist.write().unwrap_or_else(|e| e.into_inner());
-        set.insert(hash_domain(&normalize(domain)));
+        set.insert(normalize(domain));
     }
 
     /// Remove a domain from the allowlist.
     /// Thread-safe: acquires write lock.
     pub fn disallow(&self, domain: &str) {
         let mut set = self.allowlist.write().unwrap_or_else(|e| e.into_inner());
-        set.remove(&hash_domain(&normalize(domain)));
+        set.remove(&normalize(domain) as &str);
     }
 
     /// Clear the entire allowlist.
@@ -247,7 +247,7 @@ impl FilterEngine {
             let allowlist = self.allowlist.read().unwrap_or_else(|e| e.into_inner());
             let mut cursor = normalized.as_str();
             loop {
-                if allowlist.contains(&hash_domain(cursor)) {
+                if allowlist.contains(cursor) {
                     return true;
                 }
                 match cursor.find('.') {
@@ -285,8 +285,7 @@ impl FilterEngine {
             let allowlist = self.allowlist.read().unwrap_or_else(|e| e.into_inner());
             let mut cursor = normalized.as_str();
             loop {
-                let hash = hash_domain(cursor);
-                if allowlist.contains(&hash) {
+                if allowlist.contains(cursor) {
                     return Verdict::Allowed;
                 }
                 match cursor.find('.') {

@@ -185,7 +185,6 @@ pub extern "system" fn Java_com_halalfilter_bridge_NativeFilter_addAllowlist<'lo
     let engine = unsafe { &*(handle as *const FilterEngine) };
     if let Ok(d) = env.get_string(&domain) {
         let d_str: String = d.into();
-        log::info!("addAllowlist: {d_str}");
         engine.allow(&d_str);
     }
 }

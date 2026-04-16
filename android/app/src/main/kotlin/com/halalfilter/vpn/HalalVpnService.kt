@@ -103,7 +103,10 @@ class HalalVpnService : VpnService() {
             startVpn()
         }
 
-        return START_STICKY
+        // START_NOT_STICKY: don't auto-restart after system kill or circuit breaker.
+        // BootReceiver handles restart on boot; user can manually restart otherwise.
+        // Prevents infinite crash loop (START_STICKY + circuit breaker = battery drain).
+        return START_NOT_STICKY
     }
 
     override fun onRevoke() {
@@ -149,7 +152,7 @@ class HalalVpnService : VpnService() {
                 builder.addRoute(dns, 32)
             }
 
-            builder.setBlocking(false)
+            builder.setBlocking(true)
 
             vpnInterface = builder.establish()
 
@@ -206,10 +209,7 @@ class HalalVpnService : VpnService() {
         while (scope.isActive) {
             try {
                 val length = inputStream.read(buffer)
-                if (length <= 0) {
-                    delay(1)
-                    continue
-                }
+                if (length <= 0) continue
 
                 val packet = buffer.copyOf(length)
                 val blockedResponse = NativeFilter.processPacket(engineHandle, packet)

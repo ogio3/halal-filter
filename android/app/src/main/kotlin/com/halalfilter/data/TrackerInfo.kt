@@ -46,54 +46,58 @@ class TrackerInfo(context: Context) {
         val root = JSONObject(json)
 
         // Parse trackers
-        val trackersObj = root.getJSONObject("trackers")
+        val trackersObj = root.optJSONObject("trackers") ?: org.json.JSONObject()
         trackers = buildMap {
             for (domain in trackersObj.keys()) {
-                val t = trackersObj.getJSONObject(domain)
+                val t = trackersObj.optJSONObject(domain) ?: continue
                 val foundIn = mutableListOf<String>()
-                val foundInArr = t.getJSONArray("found_in")
-                for (i in 0 until foundInArr.length()) foundIn.add(foundInArr.getString(i))
+                val foundInArr = t.optJSONArray("found_in")
+                if (foundInArr != null) {
+                    for (i in 0 until foundInArr.length()) foundIn.add(foundInArr.optString(i, ""))
+                }
 
                 val dataCollected = mutableListOf<String>()
-                val dataArr = t.getJSONArray("data_collected")
-                for (i in 0 until dataArr.length()) dataCollected.add(dataArr.getString(i))
+                val dataArr = t.optJSONArray("data_collected")
+                if (dataArr != null) {
+                    for (i in 0 until dataArr.length()) dataCollected.add(dataArr.optString(i, ""))
+                }
 
                 put(domain, Tracker(
                     domain = domain,
-                    name = t.getString("name"),
-                    category = t.getString("category"),
-                    severity = t.getString("severity"),
-                    descriptionEn = t.getString("description_en"),
-                    descriptionJa = t.getString("description_ja"),
+                    name = t.optString("name", domain),
+                    category = t.optString("category", "unknown"),
+                    severity = t.optString("severity", "medium"),
+                    descriptionEn = t.optString("description_en", "Tracker blocked"),
+                    descriptionJa = t.optString("description_ja", "トラッカーをブロックしました"),
                     foundIn = foundIn,
                     dataCollected = dataCollected,
-                    pipeline = t.getString("pipeline")
+                    pipeline = t.optString("pipeline", "unknown")
                 ))
             }
         }
 
         // Parse categories
-        val catsObj = root.getJSONObject("categories")
+        val catsObj = root.optJSONObject("categories") ?: org.json.JSONObject()
         categories = buildMap {
             for (key in catsObj.keys()) {
-                val c = catsObj.getJSONObject(key)
+                val c = catsObj.optJSONObject(key) ?: continue
                 put(key, Category(
-                    nameEn = c.getString("name_en"),
-                    nameJa = c.getString("name_ja"),
-                    color = c.getString("color")
+                    nameEn = c.optString("name_en", key),
+                    nameJa = c.optString("name_ja", key),
+                    color = c.optString("color", "#888888")
                 ))
             }
         }
 
         // Parse severities
-        val sevObj = root.getJSONObject("severity_levels")
+        val sevObj = root.optJSONObject("severity_levels") ?: org.json.JSONObject()
         severities = buildMap {
             for (key in sevObj.keys()) {
-                val s = sevObj.getJSONObject(key)
+                val s = sevObj.optJSONObject(key) ?: continue
                 put(key, Severity(
-                    labelEn = s.getString("label_en"),
-                    labelJa = s.getString("label_ja"),
-                    color = s.getString("color")
+                    labelEn = s.optString("label_en", key),
+                    labelJa = s.optString("label_ja", key),
+                    color = s.optString("color", "#888888")
                 ))
             }
         }

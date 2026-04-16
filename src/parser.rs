@@ -90,29 +90,30 @@ pub fn parse_blocklist(content: &str) -> ParseResult {
             || line.starts_with("127.0.0.1 ")
             || line.starts_with("127.0.0.1\t")
         {
-            if let Some(domain) = extract_hosts_domain(line) {
-                if let Some(normalized) = normalize_domain(&domain) {
-                    // Skip localhost entries
-                    if normalized != "localhost"
-                        && normalized != "localhost.localdomain"
-                        && normalized != "local"
-                        && normalized != "broadcasthost"
-                        && normalized != "ip6-localhost"
-                        && normalized != "ip6-loopback"
-                    {
-                        result.blocked.push(normalized);
-                    } else {
-                        result.lines_skipped += 1;
-                    }
-                } else {
-                    result.errors.push(ParseError {
-                        line_number: line_number + 1,
-                        line: raw_line.to_string(),
-                        reason: "invalid domain in hosts entry",
-                    });
-                }
-            } else {
+            let domains = extract_hosts_domains(line);
+            if domains.is_empty() {
                 result.lines_skipped += 1;
+            } else {
+                for domain in domains {
+                    if let Some(normalized) = normalize_domain(&domain) {
+                        // Skip localhost entries
+                        if normalized != "localhost"
+                            && normalized != "localhost.localdomain"
+                            && normalized != "local"
+                            && normalized != "broadcasthost"
+                            && normalized != "ip6-localhost"
+                            && normalized != "ip6-loopback"
+                        {
+                            result.blocked.push(normalized);
+                        }
+                    } else {
+                        result.errors.push(ParseError {
+                            line_number: line_number + 1,
+                            line: raw_line.to_string(),
+                            reason: "invalid domain in hosts entry",
+                        });
+                    }
+                }
             }
             continue;
         }
@@ -148,25 +149,14 @@ fn extract_adblock_domain(rest: &str) -> Option<String> {
     Some(domain.to_string())
 }
 
-/// Extract domain from hosts file line.
-/// Format: `<ip> <domain> [# comment]`
-fn extract_hosts_domain(line: &str) -> Option<String> {
-    // Remove inline comment
+/// Extract all domains from a hosts file line.
+/// Format: `<ip> <domain1> [domain2 ...] [# comment]`
+/// Standard hosts files (StevenBlack, etc.) may list multiple domains per IP.
+fn extract_hosts_domains(line: &str) -> Vec<String> {
     let without_comment = line.split('#').next().unwrap_or(line).trim();
-
-    // Split on whitespace: first token is IP, second is domain
     let mut parts = without_comment.split_whitespace();
-    let _ip = parts.next()?;
-    let domain = parts.next()?;
-
-    // If there's a third token, it might be another domain on the same line
-    // (some hosts files list multiple domains per IP). We take only the first.
-    // Additional domains would need separate entries.
-    if domain.is_empty() {
-        return None;
-    }
-
-    Some(domain.to_string())
+    let _ip = parts.next(); // skip IP address
+    parts.filter(|d| !d.is_empty()).map(|d| d.to_string()).collect()
 }
 
 /// Normalize a domain string for consistent hashing.
@@ -369,6 +359,16 @@ http://not-a-bare-domain.com/path
             normalize_domain("a_b.example.com"),
             Some("a_b.example.com".to_string())
         );
+    }
+
+    #[test]
+    fn parse_hosts_multiple_domains_per_line() {
+        let content = "0.0.0.0 tracker1.com tracker2.com tracker3.com\n";
+        let result = parse_blocklist(content);
+        assert_eq!(result.blocked.len(), 3);
+        assert!(result.blocked.contains(&"tracker1.com".to_string()));
+        assert!(result.blocked.contains(&"tracker2.com".to_string()));
+        assert!(result.blocked.contains(&"tracker3.com".to_string()));
     }
 
     #[test]

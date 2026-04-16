@@ -100,6 +100,14 @@ impl DnsPacket {
             return Err(DnsError::NotQuery);
         }
 
+        // QDCOUNT must be exactly 1 (standard DNS queries).
+        // QDCOUNT=0 → no question section, parser would read garbage.
+        // QDCOUNT>1 → only first question is processed, rest silently ignored.
+        let qdcount = u16::from_be_bytes([dns[4], dns[5]]);
+        if qdcount != 1 {
+            return Err(DnsError::InvalidQname);
+        }
+
         // Parse QNAME starting at byte 12
         let (qname, qname_end) = Self::parse_qname(&dns[12..])?;
 
@@ -192,8 +200,9 @@ impl DnsResponse {
         resp.extend_from_slice(&[0xC0, 0x0C]);
         resp.extend_from_slice(&query.qtype.to_be_bytes());
         resp.extend_from_slice(&query.qclass.to_be_bytes());
-        // TTL: 300 seconds
-        resp.extend_from_slice(&300u32.to_be_bytes());
+        // TTL: 0 seconds — don't cache blocked responses so that
+        // allowlist changes take effect immediately (not delayed 5 min).
+        resp.extend_from_slice(&0u32.to_be_bytes());
 
         match query.qtype {
             1 => {
@@ -369,6 +378,22 @@ mod tests {
         // DNS flags: QR=1
         let flags = u16::from_be_bytes([resp[30], resp[31]]);
         assert!(flags & 0x8000 != 0);
+    }
+
+    #[test]
+    fn rejects_qdcount_zero() {
+        let mut pkt = build_test_packet("example.com");
+        // Set QDCOUNT=0 at DNS header bytes 4-5 (offset 32-33 in full packet)
+        pkt[32..34].copy_from_slice(&0u16.to_be_bytes());
+        assert!(DnsPacket::parse(&pkt).is_err());
+    }
+
+    #[test]
+    fn rejects_qdcount_multiple() {
+        let mut pkt = build_test_packet("example.com");
+        // Set QDCOUNT=2 at DNS header bytes 4-5
+        pkt[32..34].copy_from_slice(&2u16.to_be_bytes());
+        assert!(DnsPacket::parse(&pkt).is_err());
     }
 
     #[test]

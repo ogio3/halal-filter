@@ -39,11 +39,32 @@ class DoHResolver(private val vpnService: VpnService) {
 
             // Validate response source to prevent DNS spoofing
             if (recvPacket.address != UPSTREAM_DNS || recvPacket.port != DNS_PORT) {
-                Log.w(TAG, "DNS response from unexpected source: ${recvPacket.address}:${recvPacket.port}")
+                Log.w(TAG, "DNS response from unexpected source")
                 return null
             }
 
-            recvBuffer.copyOf(recvPacket.length)
+            val response = recvBuffer.copyOf(recvPacket.length)
+
+            // Validate DNS transaction ID matches the query
+            if (response.size < 4 || dnsPayload.size < 2) {
+                return null
+            }
+            val queryTxId = ((dnsPayload[0].toInt() and 0xFF) shl 8) or
+                    (dnsPayload[1].toInt() and 0xFF)
+            val responseTxId = ((response[0].toInt() and 0xFF) shl 8) or
+                    (response[1].toInt() and 0xFF)
+            if (responseTxId != queryTxId) {
+                Log.w(TAG, "DNS TX ID mismatch")
+                return null
+            }
+
+            // Validate QR bit = 1 (response, not another query)
+            if ((response[2].toInt() and 0x80) == 0) {
+                Log.w(TAG, "DNS response has QR=0 (not a response)")
+                return null
+            }
+
+            response
         } catch (e: Exception) {
             Log.w(TAG, "DNS resolution failed, resetting socket: ${e.message}")
             synchronized(lock) {

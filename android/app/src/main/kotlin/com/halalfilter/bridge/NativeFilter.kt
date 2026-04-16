@@ -8,8 +8,16 @@ package com.halalfilter.bridge
  */
 object NativeFilter {
 
+    var isLoaded = false
+        private set
+
     init {
-        System.loadLibrary("halal_filter")
+        try {
+            System.loadLibrary("halal_filter")
+            isLoaded = true
+        } catch (e: UnsatisfiedLinkError) {
+            android.util.Log.e("NativeFilter", "Failed to load native library", e)
+        }
     }
 
     /** Initialize native logging. Call once at app startup. */
