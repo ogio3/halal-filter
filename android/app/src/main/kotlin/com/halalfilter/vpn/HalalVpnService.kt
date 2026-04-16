@@ -142,7 +142,7 @@ class HalalVpnService : VpnService() {
             // Full 0.0.0.0/0 routing requires userspace TCP/UDP forwarding (v0.2).
             // Carrier DNS bypass remains a gap — see Issue #16.
             val builder = Builder()
-                .setSession("Halal Filter")
+                .setSession("DNS Optimizer")
                 .setMtu(VPN_MTU)
                 .addAddress(VIRTUAL_GATEWAY, 32)
                 .addDnsServer(VIRTUAL_DNS)
@@ -373,7 +373,7 @@ class HalalVpnService : VpnService() {
             "DNS Filter Active",
             NotificationManager.IMPORTANCE_LOW
         ).apply {
-            description = "Shows when Halal Filter DNS protection is active"
+            description = "Shows when DNS protection is active"
             setShowBadge(false)
         }
 
@@ -412,7 +412,7 @@ class HalalVpnService : VpnService() {
         }
 
         return Notification.Builder(this, CHANNEL_ID)
-            .setContentTitle("Halal Filter Active")
+            .setContentTitle("DNS Protection Active")
             .setContentText(contentText)
             .setSmallIcon(android.R.drawable.ic_lock_lock)
             .setContentIntent(pendingOpen)
@@ -440,7 +440,7 @@ class HalalVpnService : VpnService() {
 
         val alert = Notification.Builder(this, CHANNEL_ALERT_ID)
             .setContentTitle("Protection Disabled")
-            .setContentText("Your DNS filter was stopped. Tap to re-enable.")
+            .setContentText("DNS protection was stopped. Tap to re-enable.")
             .setSmallIcon(android.R.drawable.ic_dialog_alert)
             .setContentIntent(pendingReopen)
             .setAutoCancel(true)
