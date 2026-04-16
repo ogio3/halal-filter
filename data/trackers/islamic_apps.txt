@@ -155,13 +155,15 @@ sdk.braze.com
 braze.eu
 
 # =============================================================================
-# P1: FACEBOOK / META — Cross-app tracking via SDK
-# Found in nearly every audited app
+# P1: FACEBOOK / META — Tracking & advertising endpoints
+# Note: graph.facebook.com and connect.facebook.net are NOT blocked because
+# they are required for Facebook Login (used by Muzz, Muslim Pro, etc.).
+# Blocking them breaks sign-in. Per-app filtering planned for v1.0.
 # =============================================================================
-graph.facebook.com
+# graph.facebook.com    — needed for Facebook Login (OAuth + Graph API)
+# connect.facebook.net  — needed for Facebook SDK init / WebView auth
 pixel.facebook.com
 an.facebook.com
-connect.facebook.net
 
 # =============================================================================
 # P1: GOOGLE ANALYTICS / FIREBASE — Telemetry collection
