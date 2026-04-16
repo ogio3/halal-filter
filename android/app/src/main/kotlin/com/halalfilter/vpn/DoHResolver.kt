@@ -12,8 +12,8 @@ import java.net.InetAddress
  * The socket is protected from VPN routing loop via VpnService.protect(),
  * so DNS queries bypass our own TUN interface and reach the upstream directly.
  *
- * Thread safety: all socket operations are synchronized to prevent races
- * between resolve() (packet loop coroutine) and close() (stopVpn).
+ * Thread safety: socket lifecycle (create/close) is synchronized via [lock].
+ * Each resolve() call uses a local receive buffer, so concurrent calls are safe.
  */
 class DoHResolver(private val vpnService: VpnService) {
 
@@ -25,7 +25,6 @@ class DoHResolver(private val vpnService: VpnService) {
     }
 
     private val lock = Any()
-    private val recvBuffer = ByteArray(4096)
     private var socket: DatagramSocket? = null
 
     fun resolve(dnsPayload: ByteArray): ByteArray? {
@@ -34,6 +33,7 @@ class DoHResolver(private val vpnService: VpnService) {
             val sendPacket = DatagramPacket(dnsPayload, dnsPayload.size, UPSTREAM_DNS, DNS_PORT)
             sock.send(sendPacket)
 
+            val recvBuffer = ByteArray(4096)
             val recvPacket = DatagramPacket(recvBuffer, recvBuffer.size)
             sock.receive(recvPacket)
 

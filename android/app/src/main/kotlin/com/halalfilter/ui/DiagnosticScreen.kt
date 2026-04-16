@@ -179,9 +179,8 @@ fun DiagnosticSheet(
                     }
                     Text(
                         "Is an app not working and you're not sure why? " +
-                                "Request a detailed privacy analysis. " +
-                                "We'll examine the app and add it to our database " +
-                                "(usually within 24 hours).",
+                                "Submit the app name and we'll add it to our review queue. " +
+                                "No personal data is sent.",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )

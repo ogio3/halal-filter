@@ -46,6 +46,16 @@ locatex.babelstreet.com
 gravyanalytics.com
 venntel.com
 
+# Anomaly Six — US defense contractor, embeds SDK to harvest location data
+# Sold GPS data to US intelligence agencies (WSJ 2020)
+# Tracked phones at mosques and religious sites globally
+anomaly6.com
+
+# Patternz / Nuviad — Israeli surveillance via programmatic ad exchanges
+# Mass surveillance through RTB targeting Muslim populations (404 Media 2024)
+patternz.com
+nuviad.com
+
 # Tutela — Network measurement / location harvesting, defense sector
 tutela.com
 
@@ -61,9 +71,13 @@ cuebiq.com
 # and serving ads in Muslim Pro. Chinese government-tied company.
 pangle.io
 api16-access-sg.pangle.io
-api16-access-ttp.tiktokpangle.us
+tiktokpangle.us
 lf-static.tiktokpangle-cdn-us.com
 sf16-scmcdn-sg.ibytedtos.com
+
+# ByteDance overseas event logging — Separate from Pangle ad SDK
+log.byteoversea.com
+toblog.ctobsnssdk.com
 
 # Tencent IMSDK — Instant messaging SDK in Muslim Pro
 # Routes through Hong Kong servers
@@ -73,6 +87,11 @@ sdk-im-1252463788.cos.ap-hongkong.myqcloud.com
 # Alibaba / Alipay — Payment/ad SDK in Muslim Pro
 imgs-sea.alipay.com
 imdap-sea.alipay.com
+
+# Umeng (Alibaba) — Analytics SDK extremely common in Chinese-developed
+# Muslim apps targeting SEA and Middle East markets
+umeng.com
+umengcloud.com
 
 # Huawei OpenLocation — Location service
 openlocation-dra.platform.dbankcloud.com
@@ -113,6 +132,16 @@ moengage.com
 sdk.moengage.com
 api.moengage.com
 
+# Flurry (Yahoo) — Analytics SDK common in older Islamic apps
+flurry.com
+
+# Amplitude — Analytics SDK, increasingly common in Islamic fintech
+amplitude.com
+
+# CleverTap — Behavioral analytics, common in South Asian Muslim apps
+clevertap.com
+wzrkt.com
+
 # Flagsmith — Feature flags with tracking
 flagsmith.com
 realtime.flagsmith.com
@@ -123,6 +152,7 @@ onesignal.com
 # Braze (formerly Appboy) — Behavioral tracking, found in Muslim Pro
 braze.com
 sdk.braze.com
+braze.eu
 
 # =============================================================================
 # P1: FACEBOOK / META — Cross-app tracking via SDK
@@ -142,6 +172,7 @@ app-measurement.com
 firebaselogging.googleapis.com
 firebaselogging-pa.googleapis.com
 firebase-settings.crashlytics.com
+firebaseinstallations.googleapis.com
 
 # =============================================================================
 # P2: ADVERTISING NETWORKS

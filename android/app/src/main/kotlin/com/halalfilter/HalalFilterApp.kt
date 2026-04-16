@@ -16,8 +16,12 @@ class HalalFilterApp : Application() {
 
     override fun onCreate() {
         super.onCreate()
-        NativeFilter.init()
-        Log.i(TAG, "Application created, native engine initialized")
+        if (NativeFilter.isLoaded) {
+            NativeFilter.init()
+            Log.i(TAG, "Application created, native engine initialized")
+        } else {
+            Log.e(TAG, "Native library not loaded — filter engine unavailable")
+        }
     }
 
     /**
@@ -26,6 +30,7 @@ class HalalFilterApp : Application() {
      */
     @Synchronized
     fun getOrCreateEngine(): Long {
+        if (!NativeFilter.isLoaded) return 0L
         if (engineHandle != 0L) return engineHandle
 
         return try {

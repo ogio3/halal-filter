@@ -2,6 +2,7 @@ package com.halalfilter
 
 import android.Manifest
 import android.app.Activity
+import android.app.NotificationManager
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -108,8 +109,12 @@ class MainActivity : ComponentActivity() {
                                     }
                                 },
                                 onRequestAudit = { appName ->
-                                    Log.i(TAG, "Audit requested for: $appName")
-                                    // TODO: Send to backend or store locally
+                                    val auditPrefs = getSharedPreferences("halal_filter", Context.MODE_PRIVATE)
+                                    val existing = auditPrefs.getStringSet("audit_requests", mutableSetOf())
+                                        ?.toMutableSet() ?: mutableSetOf()
+                                    existing.add(appName)
+                                    auditPrefs.edit().putStringSet("audit_requests", existing).apply()
+                                    Log.i(TAG, "Audit request saved: $appName")
                                 },
                                 onDismiss = { showDiagnostic = false },
                                 isDomainAllowed = { domain ->
@@ -120,6 +125,33 @@ class MainActivity : ComponentActivity() {
                     }
                 }
             }
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // Detect silent VPN death (OOM kill, battery optimization, Doze).
+        // SharedPreferences vpn_enabled stays true but the service is gone.
+        val prefs = getSharedPreferences("halal_filter", Context.MODE_PRIVATE)
+        if (prefs.getBoolean("vpn_enabled", false) && !HalalVpnService.isRunning) {
+            Log.w(TAG, "VPN was expected to be running but isn't — likely killed by system")
+            prefs.edit().putBoolean("vpn_enabled", false).apply()
+
+            val nm = getSystemService(NotificationManager::class.java)
+            val alert = android.app.Notification.Builder(this, HalalVpnService.CHANNEL_ALERT_ID)
+                .setContentTitle("Protection Disabled")
+                .setContentText("DNS protection was stopped by the system. Tap to re-enable.")
+                .setSmallIcon(android.R.drawable.ic_dialog_alert)
+                .setContentIntent(android.app.PendingIntent.getActivity(
+                    this, 2,
+                    Intent(this, MainActivity::class.java).apply {
+                        flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+                    },
+                    android.app.PendingIntent.FLAG_UPDATE_CURRENT or android.app.PendingIntent.FLAG_IMMUTABLE
+                ))
+                .setAutoCancel(true)
+                .build()
+            nm.notify(HalalVpnService.ALERT_NOTIFICATION_ID, alert)
         }
     }
 

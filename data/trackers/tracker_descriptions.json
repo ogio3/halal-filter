@@ -4,8 +4,8 @@
       "name": "X-Mode",
       "category": "location_broker",
       "severity": "critical",
-      "description_en": "Location data broker that sold Muslim users' GPS coordinates to US military contractors and intelligence agencies.",
-      "description_ja": "ムスリムユーザーのGPS座標を米軍事請負業者や情報機関に販売していた位置情報データブローカー。",
+      "description_en": "Location data broker that reportedly sold Muslim users' GPS coordinates to US military contractors (Vice Motherboard, 2020).",
+      "description_ja": "ムスリムユーザーのGPS座標を米軍事請負業者に販売していたと報道された位置情報データブローカー（Vice Motherboard、2020年）。",
       "found_in": ["Muslim Pro", "Muslim Mingle"],
       "data_collected": ["gps_location", "wifi_bssid", "device_id", "timestamp"],
       "pipeline": "X-Mode → US Military / Intelligence agencies"
@@ -14,8 +14,8 @@
       "name": "Predicio",
       "category": "location_broker",
       "severity": "critical",
-      "description_en": "French data broker that transmitted Muslim prayer app users' movement patterns to US federal agencies (FBI, ICE, CBP) via Venntel.",
-      "description_ja": "ムスリムの礼拝アプリユーザーの移動パターンをVenntel経由で米連邦機関（FBI、ICE、CBP）に送信していたフランスのデータブローカー。",
+      "description_en": "French data broker reportedly linked to a pipeline transmitting prayer app users' location data to US federal agencies via Venntel (Haaretz, 2020).",
+      "description_ja": "礼拝アプリユーザーの位置情報をVenntel経由で米連邦機関に送信するパイプラインに関与したと報道されたフランスのデータブローカー（Haaretz、2020年）。",
       "found_in": ["Salaat First", "Qibla Connect"],
       "data_collected": ["gps_location", "movement_patterns"],
       "pipeline": "Predicio → Venntel → FBI / ICE / CBP"
@@ -24,8 +24,8 @@
       "name": "CellRebel",
       "category": "location_broker",
       "severity": "critical",
-      "description_en": "Persistent location tracking SDK that replaced Predicio in Salaat First after the original exposure. Intentionally hides its crashes from crash reporting.",
-      "description_ja": "元の暴露後にSalaat FirstでPredicioの代わりに採用された持続的位置追跡SDK。クラッシュを意図的にクラッシュレポートから隠蔽。",
+      "description_en": "Persistent location tracking SDK. Reportedly replaced Predicio in some apps after the 2020 exposure. Known to suppress crash reporting.",
+      "description_ja": "持続的位置追跡SDK。2020年の暴露後に一部アプリでPredicioの代わりに採用されたと報道。クラッシュレポートの抑制が確認されている。",
       "found_in": ["Salaat First"],
       "data_collected": ["gps_location", "cell_tower_data", "network_measurements"],
       "pipeline": "CellRebel → Data brokers"
@@ -34,8 +34,8 @@
       "name": "Kochava",
       "category": "location_broker",
       "severity": "critical",
-      "description_en": "FTC sued this company (Aug 2022) specifically for selling location data to identify people's religious affiliations. Found in a prayer app.",
-      "description_ja": "FTC（連邦取引委員会）が2022年8月に、人々の宗教的所属を特定するための位置情報販売で訴えた企業。礼拝アプリで発見。",
+      "description_en": "Location data company sued by the FTC (Aug 2022, Case No. 3:22-cv-377) for selling geolocation data that could identify visits to religious sites.",
+      "description_ja": "宗教施設への訪問を特定できる位置情報の販売でFTCに提訴された（2022年8月、Case No. 3:22-cv-377）位置情報企業。",
       "found_in": ["Athan Pro"],
       "data_collected": ["gps_location", "device_fingerprint", "app_usage"],
       "pipeline": "Kochava → Government agencies / Advertisers"
@@ -44,8 +44,8 @@
       "name": "ByteDance / TikTok Pangle",
       "category": "chinese_surveillance",
       "severity": "critical",
-      "description_en": "TikTok's advertising SDK tracking what foods Muslims scan as halal and serving targeted ads. Data flows to Chinese government-tied ByteDance servers.",
-      "description_ja": "ムスリムがハラールとしてスキャンした食品を追跡し、ターゲット広告を配信するTikTokの広告SDK。データは中国政府と繋がりのあるByteDanceサーバーに流れる。",
+      "description_en": "TikTok's advertising SDK that serves targeted ads and collects usage data. ByteDance is subject to China's data access laws.",
+      "description_ja": "ターゲット広告を配信し使用データを収集するTikTokの広告SDK。ByteDanceは中国のデータアクセス法の対象企業。",
       "found_in": ["Muslim Pro", "Mustakshif"],
       "data_collected": ["halal_food_scans", "browsing_behavior", "device_id"],
       "pipeline": "ByteDance/Pangle → Chinese government-linked servers"
@@ -54,21 +54,21 @@
       "name": "Tencent IMSDK",
       "category": "chinese_surveillance",
       "severity": "critical",
-      "description_en": "Tencent instant messaging SDK routing data through Hong Kong servers. Tencent is required by Chinese law to share data with the government.",
-      "description_ja": "香港サーバー経由でデータをルーティングするTencentのIMSDK。Tencentは中国法により政府とのデータ共有が義務付けられている。",
+      "description_en": "Tencent instant messaging SDK routing data through Hong Kong servers. Subject to China's National Intelligence Law regarding data access.",
+      "description_ja": "香港サーバー経由でデータをルーティングするTencentのIMSDK。中国国家情報法によるデータアクセスの対象。",
       "found_in": ["Muslim Pro"],
       "data_collected": ["messaging_metadata", "device_info"],
-      "pipeline": "Tencent → Hong Kong servers → Chinese government (by law)"
+      "pipeline": "Tencent → Hong Kong servers (subject to National Intelligence Law)"
     },
     "imgs-sea.alipay.com": {
       "name": "Alibaba / Alipay",
       "category": "chinese_surveillance",
       "severity": "high",
-      "description_en": "Alibaba payment/advertising SDK embedded in a Muslim prayer app. Subject to Chinese national security data sharing requirements.",
-      "description_ja": "ムスリムの礼拝アプリに組み込まれたAlibaba決済/広告SDK。中国の国家安全保障データ共有要件の対象。",
+      "description_en": "Alibaba payment/advertising SDK. Subject to China's data access laws.",
+      "description_ja": "Alibaba決済/広告SDK。中国のデータアクセス法の対象。",
       "found_in": ["Muslim Pro"],
       "data_collected": ["financial_data", "device_id", "app_usage"],
-      "pipeline": "Alibaba → Chinese government (National Security Law)"
+      "pipeline": "Alibaba → Subject to Chinese data access laws"
     },
     "adjust.com": {
       "name": "Adjust",
@@ -159,6 +159,36 @@
       "found_in": [],
       "data_collected": ["aggregated_location_data"],
       "pipeline": "Venntel → CBP / ICE / FBI / DIA"
+    },
+    "anomaly6.com": {
+      "name": "Anomaly Six",
+      "category": "location_broker",
+      "severity": "critical",
+      "description_en": "US defense contractor that embeds SDK in consumer apps to harvest GPS location data. Reportedly sold data to US intelligence agencies. Tracked phones at mosques and religious sites globally.",
+      "description_ja": "消費者アプリにSDKを埋め込みGPS位置情報を収集する米防衛請負業者。米情報機関にデータを販売したと報道。モスクや宗教施設での携帯電話を世界規模で追跡。",
+      "found_in": [],
+      "data_collected": ["gps_location", "device_id", "movement_patterns"],
+      "pipeline": "Anomaly Six → US intelligence agencies"
+    },
+    "patternz.com": {
+      "name": "Patternz",
+      "category": "location_broker",
+      "severity": "critical",
+      "description_en": "Israeli surveillance company conducting mass surveillance through programmatic advertising (RTB) infrastructure. Reported to target Muslim populations.",
+      "description_ja": "プログラマティック広告（RTB）インフラを通じて大規模監視を行うイスラエルの監視企業。ムスリム集団を標的にしていると報道。",
+      "found_in": [],
+      "data_collected": ["gps_location", "browsing_behavior", "device_id", "advertising_id"],
+      "pipeline": "Patternz/Nuviad → Intelligence clients"
+    },
+    "nuviad.com": {
+      "name": "Nuviad",
+      "category": "location_broker",
+      "severity": "critical",
+      "description_en": "Israeli ad-tech company operating the Patternz surveillance platform. Parent entity of the Patternz mass surveillance system.",
+      "description_ja": "Patternz監視プラットフォームを運営するイスラエルのアドテク企業。Patternz大規模監視システムの親会社。",
+      "found_in": [],
+      "data_collected": ["gps_location", "browsing_behavior", "device_id"],
+      "pipeline": "Nuviad/Patternz → Intelligence clients"
     }
   },
   "categories": {
