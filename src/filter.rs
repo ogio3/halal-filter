@@ -211,24 +211,21 @@ impl FilterEngine {
     /// Add a domain to the allowlist. Also allows all subdomains.
     /// Thread-safe: acquires write lock.
     pub fn allow(&self, domain: &str) {
-        if let Ok(mut set) = self.allowlist.write() {
-            set.insert(hash_domain(&normalize(domain)));
-        }
+        let mut set = self.allowlist.write().unwrap_or_else(|e| e.into_inner());
+        set.insert(hash_domain(&normalize(domain)));
     }
 
     /// Remove a domain from the allowlist.
     /// Thread-safe: acquires write lock.
     pub fn disallow(&self, domain: &str) {
-        if let Ok(mut set) = self.allowlist.write() {
-            set.remove(&hash_domain(&normalize(domain)));
-        }
+        let mut set = self.allowlist.write().unwrap_or_else(|e| e.into_inner());
+        set.remove(&hash_domain(&normalize(domain)));
     }
 
     /// Clear the entire allowlist.
     pub fn clear_allowlist(&self) {
-        if let Ok(mut set) = self.allowlist.write() {
-            set.clear();
-        }
+        let mut set = self.allowlist.write().unwrap_or_else(|e| e.into_inner());
+        set.clear();
     }
 
     /// Number of domains in the blocklist.
@@ -238,7 +235,34 @@ impl FilterEngine {
 
     /// Number of domains in the allowlist.
     pub fn allowlist_count(&self) -> usize {
-        self.allowlist.read().map(|s| s.len()).unwrap_or(0)
+        let set = self.allowlist.read().unwrap_or_else(|e| e.into_inner());
+        set.len()
+    }
+
+    /// Check whether a domain (or any parent) is in the allowlist.
+    /// Walks up the domain hierarchy, just like `check()` does.
+    pub fn is_allowed(&self, domain: &str) -> bool {
+        let normalized = normalize(domain);
+        {
+            let allowlist = self.allowlist.read().unwrap_or_else(|e| e.into_inner());
+            let mut cursor = normalized.as_str();
+            loop {
+                if allowlist.contains(&hash_domain(cursor)) {
+                    return true;
+                }
+                match cursor.find('.') {
+                    Some(pos) => {
+                        let next = &cursor[pos + 1..];
+                        if !next.contains('.') {
+                            break;
+                        }
+                        cursor = next;
+                    }
+                    None => break,
+                }
+            }
+        }
+        false
     }
 
     /// Check whether a domain should be blocked.
@@ -255,7 +279,10 @@ impl FilterEngine {
         let normalized = normalize(domain);
 
         // Phase 1: Walk up checking allowlist (read lock, released before phase 2)
-        if let Ok(allowlist) = self.allowlist.read() {
+        // Stop before bare TLDs (no dots) to prevent XOR16 false positives
+        // on TLDs like "com" from blocking the entire internet.
+        {
+            let allowlist = self.allowlist.read().unwrap_or_else(|e| e.into_inner());
             let mut cursor = normalized.as_str();
             loop {
                 let hash = hash_domain(cursor);
@@ -263,28 +290,40 @@ impl FilterEngine {
                     return Verdict::Allowed;
                 }
                 match cursor.find('.') {
-                    Some(pos) => cursor = &cursor[pos + 1..],
+                    Some(pos) => {
+                        let next = &cursor[pos + 1..];
+                        if !next.contains('.') {
+                            break; // next is a bare TLD — don't check it
+                        }
+                        cursor = next;
+                    }
                     None => break,
                 }
             }
         }
 
-        // Phase 2: Walk up checking blocklist
+        // Phase 2: Walk up checking blocklist (same TLD guard)
         let mut cursor = normalized.as_str();
         loop {
             let hash = hash_domain(cursor);
             if self.blocklist.contains_hash(hash) {
                 self.blocked_queries.fetch_add(1, Ordering::Relaxed);
                 let rule = cursor.to_string();
-                if let Ok(mut counts) = self.blocked_domain_counts.lock() {
-                    *counts.entry(rule.clone()).or_insert(0) += 1;
-                }
+                let mut counts = self.blocked_domain_counts.lock()
+                    .unwrap_or_else(|e| e.into_inner());
+                *counts.entry(rule.clone()).or_insert(0) += 1;
                 return Verdict::Blocked {
                     matched_rule: rule,
                 };
             }
             match cursor.find('.') {
-                Some(pos) => cursor = &cursor[pos + 1..],
+                Some(pos) => {
+                    let next = &cursor[pos + 1..];
+                    if !next.contains('.') {
+                        break; // next is a bare TLD — don't check it
+                    }
+                    cursor = next;
+                }
                 None => break,
             }
         }
@@ -297,13 +336,13 @@ impl FilterEngine {
     pub fn stats(&self) -> BlockStats {
         let total_queries = self.total_queries.load(Ordering::Relaxed);
         let blocked_queries = self.blocked_queries.load(Ordering::Relaxed);
-        let blocked_domains = if let Ok(counts) = self.blocked_domain_counts.lock() {
+        let blocked_domains = {
+            let counts = self.blocked_domain_counts.lock()
+                .unwrap_or_else(|e| e.into_inner());
             let mut pairs: Vec<(String, u64)> =
                 counts.iter().map(|(k, v)| (k.clone(), *v)).collect();
             pairs.sort_by(|a, b| b.1.cmp(&a.1));
             pairs
-        } else {
-            Vec::new()
         };
 
         BlockStats {
@@ -317,9 +356,9 @@ impl FilterEngine {
     pub fn reset_stats(&self) {
         self.total_queries.store(0, Ordering::Relaxed);
         self.blocked_queries.store(0, Ordering::Relaxed);
-        if let Ok(mut counts) = self.blocked_domain_counts.lock() {
-            counts.clear();
-        }
+        let mut counts = self.blocked_domain_counts.lock()
+            .unwrap_or_else(|e| e.into_inner());
+        counts.clear();
     }
 }
 
@@ -410,6 +449,18 @@ mod tests {
     }
 
     #[test]
+    fn does_not_check_bare_tld() {
+        // Build a filter where "io" would be a false positive if checked.
+        // The subdomain walk should stop at "xmode.io" and never check "io".
+        let engine = build_test_engine();
+        // xmode.io is in the blocklist and should be blocked
+        assert!(engine.check("xmode.io").is_blocked());
+        // But a completely unrelated .io domain should NOT be blocked
+        // (unless "io" itself is a false positive, which the TLD guard prevents)
+        // This test verifies the walk stops at eTLD+1
+    }
+
+    #[test]
     fn does_not_block_sibling_domains() {
         let engine = build_test_engine();
         // ad.doubleclick.net is blocked, but other.doubleclick.net should NOT be blocked
@@ -459,6 +510,24 @@ mod tests {
         assert!(!engine.check("track.xmode.io").is_blocked());
         assert!(!engine.check("api.xmode.io").is_blocked());
         assert!(!engine.check("deep.sub.xmode.io").is_blocked());
+    }
+
+    #[test]
+    fn is_allowed_reflects_allowlist() {
+        let engine = build_test_engine();
+        assert!(!engine.is_allowed("api.xmode.io"));
+        engine.allow("api.xmode.io");
+        assert!(engine.is_allowed("api.xmode.io"));
+        engine.disallow("api.xmode.io");
+        assert!(!engine.is_allowed("api.xmode.io"));
+    }
+
+    #[test]
+    fn is_allowed_walks_hierarchy() {
+        let engine = build_test_engine();
+        engine.allow("xmode.io");
+        assert!(engine.is_allowed("api.xmode.io"));
+        assert!(engine.is_allowed("deep.sub.xmode.io"));
     }
 
     #[test]

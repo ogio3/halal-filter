@@ -1,7 +1,9 @@
 package com.halalfilter.ui
 
+import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import android.os.PowerManager
@@ -112,6 +114,30 @@ fun isBatteryOptimizationIgnored(context: Context): Boolean {
     return pm.isIgnoringBatteryOptimizations(context.packageName)
 }
 
+private fun isPowerGenieInstalled(context: Context): Boolean {
+    return try {
+        context.packageManager.getPackageInfo("com.hihonor.powergenie", 0)
+        true
+    } catch (_: PackageManager.NameNotFoundException) {
+        false
+    }
+}
+
+private fun openPowerGenieAppLaunch(context: Context): Boolean {
+    return try {
+        val intent = Intent().apply {
+            component = ComponentName(
+                "com.hihonor.powergenie",
+                "com.hihonor.powergenie.ui.AppLaunchActivity"
+            )
+        }
+        context.startActivity(intent)
+        true
+    } catch (_: Exception) {
+        false
+    }
+}
+
 @Composable
 fun BatteryOptimizationCard(
     onDismiss: () -> Unit,
@@ -196,6 +222,41 @@ fun BatteryOptimizationCard(
                         )
                     }
                 }
+
+                // PowerGenie-specific guidance for Honor devices
+                if (isPowerGenieInstalled(context)) {
+                    HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
+                    Text(
+                        text = "Honor PowerGenie detected",
+                        style = MaterialTheme.typography.labelMedium,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                    Text(
+                        text = "PowerGenie manages apps independently. Open App Launch settings " +
+                                "and disable \"Manage automatically\" for Halal Filter.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    OutlinedButton(
+                        onClick = { openPowerGenieAppLaunch(context) },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text("Open App Launch Settings")
+                    }
+                }
+
+                // Always-on VPN guidance
+                HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
+                Text(
+                    text = "For best protection, enable Always-on VPN:",
+                    style = MaterialTheme.typography.labelMedium,
+                    fontWeight = FontWeight.SemiBold
+                )
+                Text(
+                    text = "Settings → Network & internet → VPN → Halal Filter → Always-on VPN ✓",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
 
                 TextButton(onClick = onDismiss) {
                     Text("Remind me later")

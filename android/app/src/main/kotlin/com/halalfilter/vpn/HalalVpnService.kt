@@ -31,14 +31,47 @@ class HalalVpnService : VpnService() {
 
     companion object {
         private const val TAG = "HalalVpnService"
-        private const val CHANNEL_ID = "halal_filter_vpn"
-        private const val CHANNEL_ALERT_ID = "halal_filter_alert"
+        const val CHANNEL_ID = "halal_filter_vpn"
+        const val CHANNEL_ALERT_ID = "halal_filter_alert"
         private const val NOTIFICATION_ID = 1
-        private const val ALERT_NOTIFICATION_ID = 2
+        const val ALERT_NOTIFICATION_ID = 2
         private const val VPN_MTU = 1500
 
         private const val VIRTUAL_DNS = "10.0.0.2"
         private const val VIRTUAL_GATEWAY = "10.0.0.1"
+
+        // Public DNS servers to intercept. Prevents tracker SDKs from bypassing
+        // the filter by hardcoding well-known DNS resolver IPs.
+        private val INTERCEPTED_DNS_SERVERS = arrayOf(
+            // Google
+            "8.8.8.8", "8.8.4.4",
+            // Cloudflare
+            "1.1.1.1", "1.0.0.1",
+            // Quad9
+            "9.9.9.9", "149.112.112.112",
+            // OpenDNS
+            "208.67.222.222", "208.67.220.220",
+            // CleanBrowsing
+            "185.228.168.9", "185.228.169.9",
+            // AdGuard DNS
+            "94.140.14.14", "94.140.15.15",
+            // Comodo Secure
+            "8.26.56.26", "8.20.247.20",
+            // Level3 / CenturyLink
+            "209.244.0.3", "209.244.0.4",
+            // Verisign
+            "64.6.64.6", "64.6.65.6",
+            // Yandex
+            "77.88.8.8", "77.88.8.1",
+            // DNS.WATCH
+            "84.200.69.80", "84.200.70.40",
+        )
+
+        /** True while the VPN tunnel is established and the packet loop is running. */
+        @Volatile
+        @JvmStatic
+        var isRunning: Boolean = false
+            private set
     }
 
     private var vpnInterface: ParcelFileDescriptor? = null
@@ -55,7 +88,12 @@ class HalalVpnService : VpnService() {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         if (intent?.action == "STOP") {
-            stopVpn(userInitiated = true)
+            // Verify caller is our own process to prevent external injection
+            if (android.os.Binder.getCallingUid() == android.os.Process.myUid()) {
+                stopVpn(userInitiated = true)
+            } else {
+                Log.w(TAG, "Rejecting STOP from external caller uid=${android.os.Binder.getCallingUid()}")
+            }
             return START_NOT_STICKY
         }
 
@@ -96,19 +134,22 @@ class HalalVpnService : VpnService() {
                 return
             }
 
+            // Route all well-known public DNS servers through the VPN to prevent
+            // tracker SDKs from bypassing the filter via hardcoded DNS IPs.
+            // Full 0.0.0.0/0 routing requires userspace TCP/UDP forwarding (v0.2).
+            // Carrier DNS bypass remains a gap — see Issue #16.
             val builder = Builder()
                 .setSession("Halal Filter")
                 .setMtu(VPN_MTU)
                 .addAddress(VIRTUAL_GATEWAY, 32)
                 .addDnsServer(VIRTUAL_DNS)
                 .addRoute(VIRTUAL_DNS, 32)
-                .addRoute("8.8.8.8", 32)
-                .addRoute("8.8.4.4", 32)
-                .addRoute("1.1.1.1", 32)
-                .addRoute("1.0.0.1", 32)
-                .addRoute("9.9.9.9", 32)
-                .addRoute("149.112.112.112", 32)
-                .setBlocking(false)
+
+            for (dns in INTERCEPTED_DNS_SERVERS) {
+                builder.addRoute(dns, 32)
+            }
+
+            builder.setBlocking(false)
 
             vpnInterface = builder.establish()
 
@@ -125,6 +166,7 @@ class HalalVpnService : VpnService() {
             // Dismiss any "protection lost" alert
             notificationManager?.cancel(ALERT_NOTIFICATION_ID)
 
+            isRunning = true
             Log.i(TAG, "VPN interface established, starting packet loop")
             scope.launch { packetLoop() }
             scope.launch { statsNotificationUpdater() }
@@ -136,7 +178,11 @@ class HalalVpnService : VpnService() {
     }
 
     private fun stopVpn(userInitiated: Boolean) {
+        isRunning = false
         scope.cancel()
+        if (::dohResolver.isInitialized) {
+            dohResolver.close()
+        }
         vpnInterface?.close()
         vpnInterface = null
 
@@ -207,15 +253,23 @@ class HalalVpnService : VpnService() {
      * Periodically update the persistent notification with live stats.
      */
     private suspend fun statsNotificationUpdater() {
+        var lastTotal = -1L
+        var lastBlocked = -1L
+
         while (scope.isActive) {
-            delay(5000)
+            delay(30_000)
             if (engineHandle != 0L) {
                 val total = NativeFilter.getTotalQueries(engineHandle)
                 val blocked = NativeFilter.getBlockedQueries(engineHandle)
-                notificationManager?.notify(
-                    NOTIFICATION_ID,
-                    buildNotification(total, blocked)
-                )
+
+                if (total != lastTotal || blocked != lastBlocked) {
+                    lastTotal = total
+                    lastBlocked = blocked
+                    notificationManager?.notify(
+                        NOTIFICATION_ID,
+                        buildNotification(total, blocked)
+                    )
+                }
             }
         }
     }

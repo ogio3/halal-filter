@@ -16,6 +16,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
+import android.content.Context
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -140,10 +141,25 @@ fun DashboardScreen(
 
         // Battery optimization warning (OEM-specific)
         item {
-            var showBatteryGuide by remember { mutableStateOf(true) }
+            val prefs = remember {
+                context.getSharedPreferences("halal_filter", Context.MODE_PRIVATE)
+            }
+            val dismissedUntil = prefs.getLong("battery_guide_dismissed_until", 0L)
+            var showBatteryGuide by remember {
+                mutableStateOf(
+                    System.currentTimeMillis() > dismissedUntil
+                        && !isBatteryOptimizationIgnored(context)
+                )
+            }
             if (showBatteryGuide) {
                 BatteryOptimizationCard(
-                    onDismiss = { showBatteryGuide = false }
+                    onDismiss = {
+                        showBatteryGuide = false
+                        prefs.edit().putLong(
+                            "battery_guide_dismissed_until",
+                            System.currentTimeMillis() + 24 * 60 * 60 * 1000
+                        ).apply()
+                    }
                 )
             }
         }

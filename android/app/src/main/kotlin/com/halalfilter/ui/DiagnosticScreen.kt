@@ -42,6 +42,7 @@ fun DiagnosticSheet(
     onBlockDomain: (String) -> Unit,
     onRequestAudit: (String) -> Unit,
     onDismiss: () -> Unit,
+    isDomainAllowed: (String) -> Boolean = { false },
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
@@ -114,6 +115,7 @@ fun DiagnosticSheet(
             items(knownTrackers) { connection ->
                 DiagnosticTrackerCard(
                     connection = connection,
+                    initiallyAllowed = isDomainAllowed(connection.domain),
                     onAllow = { onAllowDomain(connection.domain) },
                     onBlock = { onBlockDomain(connection.domain) }
                 )
@@ -214,6 +216,7 @@ fun DiagnosticSheet(
 @Composable
 private fun DiagnosticTrackerCard(
     connection: BlockedConnection,
+    initiallyAllowed: Boolean,
     onAllow: () -> Unit,
     onBlock: () -> Unit
 ) {
@@ -222,7 +225,7 @@ private fun DiagnosticTrackerCard(
         "high" -> Color(0xFFE65100)
         else -> Color(0xFFFF8F00)
     }
-    var isAllowed by remember { mutableStateOf(false) }
+    var isAllowed by remember(connection.domain) { mutableStateOf(initiallyAllowed) }
 
     Card(
         modifier = Modifier.fillMaxWidth(),

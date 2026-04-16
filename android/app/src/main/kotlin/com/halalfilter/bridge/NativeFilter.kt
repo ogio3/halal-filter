@@ -48,6 +48,10 @@ object NativeFilter {
     @JvmStatic
     external fun removeAllowlist(handle: Long, domain: String)
 
+    /** Check whether a domain is in the runtime allowlist. */
+    @JvmStatic
+    external fun isAllowed(handle: Long, domain: String): Boolean
+
     /** Total DNS queries processed since last reset. */
     @JvmStatic
     external fun getTotalQueries(handle: Long): Long

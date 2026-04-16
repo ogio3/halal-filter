@@ -20,11 +20,30 @@
 //! - No JNI calls use a handle after `destroyEngine()`
 
 use jni::objects::{JByteArray, JClass, JString};
-use jni::sys::{jbyteArray, jint, jlong, jstring};
+use jni::sys::{jboolean, jbyteArray, jint, jlong, jstring};
 use jni::JNIEnv;
 
 use crate::dns::{DnsPacket, DnsResponse};
 use crate::filter::{BlocklistFilter, FilterEngine};
+
+/// Escape special characters for safe JSON string embedding.
+fn escape_json_string(s: &str) -> String {
+    let mut out = String::with_capacity(s.len());
+    for c in s.chars() {
+        match c {
+            '"' => out.push_str("\\\""),
+            '\\' => out.push_str("\\\\"),
+            '\n' => out.push_str("\\n"),
+            '\r' => out.push_str("\\r"),
+            '\t' => out.push_str("\\t"),
+            c if (c as u32) < 0x20 => {
+                out.push_str(&format!("\\u{:04x}", c as u32));
+            }
+            _ => out.push(c),
+        }
+    }
+    out
+}
 
 /// Initialize Android logging. Call once from Application.onCreate().
 #[no_mangle]
@@ -45,7 +64,7 @@ pub extern "system" fn Java_com_halalfilter_bridge_NativeFilter_init(
 /// Returns 0 on failure.
 #[no_mangle]
 pub extern "system" fn Java_com_halalfilter_bridge_NativeFilter_createEngine<'local>(
-    mut env: JNIEnv<'local>,
+    env: JNIEnv<'local>,
     _class: JClass<'local>,
     filter_bytes: JByteArray<'local>,
 ) -> jlong {
@@ -101,7 +120,7 @@ pub extern "system" fn Java_com_halalfilter_bridge_NativeFilter_destroyEngine(
 /// This is the hot path — called for every packet read from the TUN fd.
 #[no_mangle]
 pub extern "system" fn Java_com_halalfilter_bridge_NativeFilter_processPacket<'local>(
-    mut env: JNIEnv<'local>,
+    env: JNIEnv<'local>,
     _class: JClass<'local>,
     handle: jlong,
     raw_packet: JByteArray<'local>,
@@ -189,6 +208,26 @@ pub extern "system" fn Java_com_halalfilter_bridge_NativeFilter_removeAllowlist<
     }
 }
 
+/// Check whether a domain is in the runtime allowlist.
+#[no_mangle]
+pub extern "system" fn Java_com_halalfilter_bridge_NativeFilter_isAllowed<'local>(
+    mut env: JNIEnv<'local>,
+    _class: JClass<'local>,
+    handle: jlong,
+    domain: JString<'local>,
+) -> jboolean {
+    if handle == 0 {
+        return 0;
+    }
+    let engine = unsafe { &*(handle as *const FilterEngine) };
+    if let Ok(d) = env.get_string(&domain) {
+        let d_str: String = d.into();
+        if engine.is_allowed(&d_str) { 1 } else { 0 }
+    } else {
+        0
+    }
+}
+
 /// Get the total number of DNS queries processed.
 #[no_mangle]
 pub extern "system" fn Java_com_halalfilter_bridge_NativeFilter_getTotalQueries(
@@ -223,7 +262,7 @@ pub extern "system" fn Java_com_halalfilter_bridge_NativeFilter_getBlockedQuerie
 /// Format: [{"domain":"xmode.io","count":42},...]
 #[no_mangle]
 pub extern "system" fn Java_com_halalfilter_bridge_NativeFilter_getBlockedDomainsJson<'local>(
-    mut env: JNIEnv<'local>,
+    env: JNIEnv<'local>,
     _class: JClass<'local>,
     handle: jlong,
     limit: jint,
@@ -242,7 +281,10 @@ pub extern "system" fn Java_com_halalfilter_bridge_NativeFilter_getBlockedDomain
         .blocked_domains
         .iter()
         .take(limit)
-        .map(|(domain, count)| format!(r#"{{"domain":"{domain}","count":{count}}}"#))
+        .map(|(domain, count)| {
+            let escaped = escape_json_string(domain);
+            format!(r#"{{"domain":"{escaped}","count":{count}}}"#)
+        })
         .collect();
 
     let json = format!("[{}]", entries.join(","));
