@@ -113,9 +113,12 @@ adjust.com
 appsflyer.com
 
 # Branch.io — Deep linking + attribution, found in Muzz
-branch.io
-api2.branch.io
-cdn.branch.io
+# NOT blocked: Branch.io is a deep linking platform, not just attribution.
+# Blocking breaks shared links, invite links, and deferred deep links.
+# (MetaMask #7224, AdGuard #1722, Pi-hole reports confirm breakage)
+# branch.io
+# api2.branch.io
+# cdn.branch.io
 
 # Mixpanel — User analytics with 30-second flush interval (Muzz)
 mixpanel.com
@@ -174,7 +177,9 @@ app-measurement.com
 firebaselogging.googleapis.com
 firebaselogging-pa.googleapis.com
 firebase-settings.crashlytics.com
-firebaseinstallations.googleapis.com
+# firebaseinstallations.googleapis.com — NOT blocked: FID is required for
+# FCM push notifications. Blocking kills prayer reminders and all push.
+# (Firebase docs: "FCM uses Firebase installation IDs to target devices")
 
 # =============================================================================
 # P2: ADVERTISING NETWORKS
