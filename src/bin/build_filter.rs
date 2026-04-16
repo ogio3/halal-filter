@@ -113,14 +113,32 @@ fn main() {
         return;
     }
 
-    if merged.blocked.is_empty() {
+    // Remove allowed domains from blocklist (e.g., AdGuard's @@|| exceptions)
+    let final_blocked: Vec<String> = if merged.allowed.is_empty() {
+        merged.blocked
+    } else {
+        let allow_set: std::collections::HashSet<&str> =
+            merged.allowed.iter().map(|s| s.as_str()).collect();
+        let before = merged.blocked.len();
+        let filtered: Vec<String> = merged.blocked
+            .into_iter()
+            .filter(|d| !allow_set.contains(d.as_str()))
+            .collect();
+        let removed = before - filtered.len();
+        if removed > 0 {
+            eprintln!("  removed {} domains via allowlist exceptions", removed);
+        }
+        filtered
+    };
+
+    if final_blocked.is_empty() {
         eprintln!("error: no domains to block after parsing");
         process::exit(1);
     }
 
     // Build filter
     eprintln!("\nbuilding XOR16 filter...");
-    let refs: Vec<&str> = merged.blocked.iter().map(|s| s.as_str()).collect();
+    let refs: Vec<&str> = final_blocked.iter().map(|s| s.as_str()).collect();
     let filter = match BlocklistFilter::build(refs.into_iter()) {
         Ok(f) => f,
         Err(e) => {
@@ -154,16 +172,7 @@ fn main() {
 
     eprintln!("\nwritten: {output_path}");
 
-    // Write allowlist as separate file if any
-    if !merged.allowed.is_empty() {
-        let allowlist_path = output_path.replace(".bin", ".allowlist.txt");
-        let allowlist_content = merged.allowed.join("\n");
-        if let Err(e) = fs::write(&allowlist_path, &allowlist_content) {
-            eprintln!("warn: cannot write allowlist file: {e}");
-        } else {
-            eprintln!("written: {allowlist_path} ({} domains)", merged.allowed.len());
-        }
-    }
+    eprintln!("  final blocklist: {} domains", final_blocked.len());
 }
 
 fn print_usage(program: &str) {

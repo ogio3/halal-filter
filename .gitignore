@@ -12,6 +12,9 @@ android/app/src/main/assets/filter.bin
 # Pre-built binaries (generated from source)
 data/trackers/*.bin
 
+# Downloaded blocklist cache (re-fetched by scripts/fetch_lists.sh)
+data/cache/
+
 # IDE
 .idea/
 *.iml

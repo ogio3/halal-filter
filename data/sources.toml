@@ -1,0 +1,107 @@
+# halal-filter — Blocklist Source Registry
+#
+# Lists are downloaded at build time by scripts/fetch_lists.sh,
+# merged with our curated Islamic surveillance list, and compiled
+# into filter.bin via build_filter.
+#
+# Tiers:
+#   core     — Always included. Our curated Islamic app surveillance list.
+#   standard — Included by default. Well-maintained, low false-positive community lists.
+#   extended — Opt-in. Aggressive blocking for power users.
+#
+# License compliance:
+#   - MIT/MPL/permissive: no restrictions on compiled binary
+#   - GPL-3.0: build script is open-source, source URLs documented → compliant
+#   - Proprietary/NC: NOT included (280blocker, DuckDuckGo Tracker Radar)
+
+# =============================================================================
+# CORE — Islamic App Surveillance (our unique value-add)
+# =============================================================================
+
+[[sources]]
+name = "halal-filter-islamic"
+url = "local://data/trackers/islamic_apps.txt"
+format = "domains"
+license = "MIT"
+tier = "core"
+description = "88 curated surveillance SDK domains from 21 Muslim app audits"
+
+# =============================================================================
+# STANDARD — Community ad/tracker lists (included by default)
+# =============================================================================
+
+[[sources]]
+name = "steven-black-hosts"
+url = "https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts"
+format = "hosts"
+license = "MIT"
+tier = "standard"
+domains_approx = 77500
+description = "Unified hosts file with ad + malware domains"
+
+[[sources]]
+name = "peter-lowe-adservers"
+url = "https://pgl.yoyo.org/adservers/serverlist.php?hostformat=nohtml&showintro=0&mimetype=plaintext"
+format = "domains"
+license = "McRae-GPL (redistribution OK)"
+tier = "standard"
+domains_approx = 3500
+description = "Well-curated ad server list, minimal false positives"
+
+[[sources]]
+name = "adguard-dns"
+url = "https://adguardteam.github.io/AdGuardSDNSFilter/Filters/filter.txt"
+format = "adblock"
+license = "GPL-3.0"
+tier = "standard"
+domains_approx = 50000
+description = "AdGuard DNS filter — includes EasyList + EasyPrivacy content"
+
+[[sources]]
+name = "hagezi-pro"
+url = "https://raw.githubusercontent.com/hagezi/dns-blocklists/main/domains/pro.txt"
+format = "domains"
+license = "GPL-3.0"
+tier = "standard"
+domains_approx = 198000
+description = "HaGeZi Multi Pro — aggressive but well-maintained, includes Japanese ads"
+
+[[sources]]
+name = "1hosts-lite"
+url = "https://raw.githubusercontent.com/badmojr/1Hosts/master/Lite/domains.txt"
+format = "domains"
+license = "MPL-2.0"
+tier = "standard"
+domains_approx = 93000
+description = "1Hosts Lite — balanced ad/tracker/malware blocking"
+
+# =============================================================================
+# EXTENDED — Aggressive blocking (opt-in for power users)
+# =============================================================================
+
+[[sources]]
+name = "oisd-big"
+url = "https://big.oisd.nl/domainswild2"
+format = "domains"
+license = "GPL-3.0"
+tier = "extended"
+domains_approx = 210000
+description = "OISD Big — comprehensive aggregation of many lists"
+
+[[sources]]
+name = "energized-blu"
+url = "https://block.energized.pro/bluGo/formats/domains.txt"
+format = "domains"
+license = "MIT"
+tier = "extended"
+domains_approx = 319000
+description = "Energized Blu — aggressive, broad coverage"
+
+[[sources]]
+name = "hagezi-proplus"
+url = "https://raw.githubusercontent.com/hagezi/dns-blocklists/main/domains/pro.plus.txt"
+format = "domains"
+license = "GPL-3.0"
+tier = "extended"
+domains_approx = 250000
+description = "HaGeZi Multi Pro++ — maximum blocking, some false positives possible"
