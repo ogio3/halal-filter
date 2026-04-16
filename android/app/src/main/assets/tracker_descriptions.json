@@ -1,0 +1,219 @@
+{
+  "trackers": {
+    "xmode.io": {
+      "name": "X-Mode",
+      "category": "location_broker",
+      "severity": "critical",
+      "description_en": "Location data broker that sold Muslim users' GPS coordinates to US military contractors and intelligence agencies.",
+      "description_ja": "ムスリムユーザーのGPS座標を米軍事請負業者や情報機関に販売していた位置情報データブローカー。",
+      "found_in": ["Muslim Pro", "Muslim Mingle"],
+      "data_collected": ["gps_location", "wifi_bssid", "device_id", "timestamp"],
+      "pipeline": "X-Mode → US Military / Intelligence agencies"
+    },
+    "predicio.fr": {
+      "name": "Predicio",
+      "category": "location_broker",
+      "severity": "critical",
+      "description_en": "French data broker that transmitted Muslim prayer app users' movement patterns to US federal agencies (FBI, ICE, CBP) via Venntel.",
+      "description_ja": "ムスリムの礼拝アプリユーザーの移動パターンをVenntel経由で米連邦機関（FBI、ICE、CBP）に送信していたフランスのデータブローカー。",
+      "found_in": ["Salaat First", "Qibla Connect"],
+      "data_collected": ["gps_location", "movement_patterns"],
+      "pipeline": "Predicio → Venntel → FBI / ICE / CBP"
+    },
+    "cellrebel.com": {
+      "name": "CellRebel",
+      "category": "location_broker",
+      "severity": "critical",
+      "description_en": "Persistent location tracking SDK that replaced Predicio in Salaat First after the original exposure. Intentionally hides its crashes from crash reporting.",
+      "description_ja": "元の暴露後にSalaat FirstでPredicioの代わりに採用された持続的位置追跡SDK。クラッシュを意図的にクラッシュレポートから隠蔽。",
+      "found_in": ["Salaat First"],
+      "data_collected": ["gps_location", "cell_tower_data", "network_measurements"],
+      "pipeline": "CellRebel → Data brokers"
+    },
+    "kochava.com": {
+      "name": "Kochava",
+      "category": "location_broker",
+      "severity": "critical",
+      "description_en": "FTC sued this company (Aug 2022) specifically for selling location data to identify people's religious affiliations. Found in a prayer app.",
+      "description_ja": "FTC（連邦取引委員会）が2022年8月に、人々の宗教的所属を特定するための位置情報販売で訴えた企業。礼拝アプリで発見。",
+      "found_in": ["Athan Pro"],
+      "data_collected": ["gps_location", "device_fingerprint", "app_usage"],
+      "pipeline": "Kochava → Government agencies / Advertisers"
+    },
+    "pangle.io": {
+      "name": "ByteDance / TikTok Pangle",
+      "category": "chinese_surveillance",
+      "severity": "critical",
+      "description_en": "TikTok's advertising SDK tracking what foods Muslims scan as halal and serving targeted ads. Data flows to Chinese government-tied ByteDance servers.",
+      "description_ja": "ムスリムがハラールとしてスキャンした食品を追跡し、ターゲット広告を配信するTikTokの広告SDK。データは中国政府と繋がりのあるByteDanceサーバーに流れる。",
+      "found_in": ["Muslim Pro", "Mustakshif"],
+      "data_collected": ["halal_food_scans", "browsing_behavior", "device_id"],
+      "pipeline": "ByteDance/Pangle → Chinese government-linked servers"
+    },
+    "im.sdk.qcloud.com": {
+      "name": "Tencent IMSDK",
+      "category": "chinese_surveillance",
+      "severity": "critical",
+      "description_en": "Tencent instant messaging SDK routing data through Hong Kong servers. Tencent is required by Chinese law to share data with the government.",
+      "description_ja": "香港サーバー経由でデータをルーティングするTencentのIMSDK。Tencentは中国法により政府とのデータ共有が義務付けられている。",
+      "found_in": ["Muslim Pro"],
+      "data_collected": ["messaging_metadata", "device_info"],
+      "pipeline": "Tencent → Hong Kong servers → Chinese government (by law)"
+    },
+    "imgs-sea.alipay.com": {
+      "name": "Alibaba / Alipay",
+      "category": "chinese_surveillance",
+      "severity": "high",
+      "description_en": "Alibaba payment/advertising SDK embedded in a Muslim prayer app. Subject to Chinese national security data sharing requirements.",
+      "description_ja": "ムスリムの礼拝アプリに組み込まれたAlibaba決済/広告SDK。中国の国家安全保障データ共有要件の対象。",
+      "found_in": ["Muslim Pro"],
+      "data_collected": ["financial_data", "device_id", "app_usage"],
+      "pipeline": "Alibaba → Chinese government (National Security Law)"
+    },
+    "adjust.com": {
+      "name": "Adjust",
+      "category": "attribution",
+      "severity": "high",
+      "description_en": "Device fingerprinting SDK that creates persistent cross-app tracking profiles using unresettable device identifiers (sec_did).",
+      "description_ja": "リセット不可能なデバイス識別子（sec_did）を使用して永続的なクロスアプリ追跡プロファイルを作成するデバイスフィンガープリンティングSDK。",
+      "found_in": ["Muslim Pro", "Muzz"],
+      "data_collected": ["device_fingerprint", "app_install_attribution", "usage_patterns"],
+      "pipeline": "Adjust → Advertisers / Analytics"
+    },
+    "graph.facebook.com": {
+      "name": "Facebook SDK",
+      "category": "social_tracking",
+      "severity": "high",
+      "description_en": "Meta's cross-app tracking SDK that links your religious app usage to your Facebook advertising profile, even without a Facebook account.",
+      "description_ja": "Facebookアカウントがなくても、宗教アプリの使用状況をFacebook広告プロファイルにリンクするMetaのクロスアプリ追跡SDK。",
+      "found_in": ["Muslim Pro", "Muzz", "Salams", "Athan"],
+      "data_collected": ["app_events", "device_id", "advertising_id"],
+      "pipeline": "Meta → Global advertising network"
+    },
+    "analytics.google.com": {
+      "name": "Google Analytics",
+      "category": "analytics",
+      "severity": "medium",
+      "description_en": "Google's analytics service tracking app usage patterns, screen views, and user behavior.",
+      "description_ja": "アプリの使用パターン、画面表示、ユーザー行動を追跡するGoogleの分析サービス。",
+      "found_in": ["Multiple apps"],
+      "data_collected": ["screen_views", "user_events", "session_data"],
+      "pipeline": "Google → Analytics / Advertising"
+    },
+    "app-measurement.com": {
+      "name": "Firebase Analytics",
+      "category": "analytics",
+      "severity": "medium",
+      "description_en": "Firebase measurement endpoint that collects detailed app usage telemetry. In Muslim Pro, this includes Quran reading at chapter level.",
+      "description_ja": "詳細なアプリ使用テレメトリを収集するFirebase測定エンドポイント。Muslim Proでは、章レベルのクルアーン読書が含まれる。",
+      "found_in": ["Muslim Pro", "Multiple apps"],
+      "data_collected": ["app_events", "quran_reading_chapters", "prayer_times"],
+      "pipeline": "Firebase → Google BigQuery"
+    },
+    "mixpanel.com": {
+      "name": "Mixpanel",
+      "category": "analytics",
+      "severity": "medium",
+      "description_en": "User analytics platform with aggressive 30-second data flush interval, capturing detailed user behavior in Muslim dating app Muzz.",
+      "description_ja": "30秒間隔の積極的データフラッシュで、ムスリム出会いアプリMuzzの詳細なユーザー行動をキャプチャするユーザー分析プラットフォーム。",
+      "found_in": ["Muzz"],
+      "data_collected": ["user_events", "profile_data", "interaction_patterns"],
+      "pipeline": "Mixpanel → Analytics dashboard"
+    },
+    "applovin.com": {
+      "name": "AppLovin",
+      "category": "advertising",
+      "severity": "medium",
+      "description_en": "Mobile advertising and mediation platform serving targeted ads based on user profiling.",
+      "description_ja": "ユーザープロファイリングに基づくターゲット広告を配信するモバイル広告・メディエーションプラットフォーム。",
+      "found_in": ["Multiple apps"],
+      "data_collected": ["advertising_id", "device_info", "ad_interaction"],
+      "pipeline": "AppLovin → Advertising exchange"
+    },
+    "babelstreet.com": {
+      "name": "Babel Street / Locate X",
+      "category": "location_broker",
+      "severity": "critical",
+      "description_en": "Provides location tracking service to law enforcement without warrants, exploiting the 'data broker loophole'.",
+      "description_ja": "「データブローカーの抜け穴」を利用し、令状なしで法執行機関に位置追跡サービスを提供。",
+      "found_in": [],
+      "data_collected": ["gps_location", "advertising_id"],
+      "pipeline": "Babel Street → Law enforcement (warrantless)"
+    },
+    "gravyanalytics.com": {
+      "name": "Gravy Analytics",
+      "category": "location_broker",
+      "severity": "critical",
+      "description_en": "Government surveillance data broker with direct pipeline to US federal agencies including ICE, CBP, DIA, and FBI.",
+      "description_ja": "ICE、CBP、DIA、FBIを含む米連邦機関への直接パイプラインを持つ政府監視データブローカー。",
+      "found_in": [],
+      "data_collected": ["gps_location", "movement_patterns"],
+      "pipeline": "Gravy Analytics → Venntel → ICE / CBP / DIA / FBI"
+    },
+    "venntel.com": {
+      "name": "Venntel",
+      "category": "location_broker",
+      "severity": "critical",
+      "description_en": "US government contractor that aggregates location data from multiple brokers and provides it to immigration and border agencies.",
+      "description_ja": "複数のブローカーから位置情報を集約し、入国管理・国境機関に提供する米政府請負業者。",
+      "found_in": [],
+      "data_collected": ["aggregated_location_data"],
+      "pipeline": "Venntel → CBP / ICE / FBI / DIA"
+    }
+  },
+  "categories": {
+    "location_broker": {
+      "name_en": "Location Data Broker",
+      "name_ja": "位置情報データブローカー",
+      "icon": "location_off",
+      "color": "#D32F2F"
+    },
+    "chinese_surveillance": {
+      "name_en": "Chinese Government-Linked",
+      "name_ja": "中国政府関連",
+      "icon": "warning",
+      "color": "#D32F2F"
+    },
+    "attribution": {
+      "name_en": "Device Fingerprinting",
+      "name_ja": "デバイスフィンガープリンティング",
+      "icon": "fingerprint",
+      "color": "#E65100"
+    },
+    "social_tracking": {
+      "name_en": "Social Media Tracking",
+      "name_ja": "ソーシャルメディア追跡",
+      "icon": "group",
+      "color": "#E65100"
+    },
+    "analytics": {
+      "name_en": "Analytics / Telemetry",
+      "name_ja": "分析/テレメトリ",
+      "icon": "analytics",
+      "color": "#FF8F00"
+    },
+    "advertising": {
+      "name_en": "Advertising Network",
+      "name_ja": "広告ネットワーク",
+      "icon": "ads_click",
+      "color": "#FF8F00"
+    }
+  },
+  "severity_levels": {
+    "critical": {
+      "label_en": "Critical: Government Surveillance",
+      "label_ja": "危険：政府監視",
+      "color": "#D32F2F"
+    },
+    "high": {
+      "label_en": "High: Cross-App Tracking",
+      "label_ja": "高：クロスアプリ追跡",
+      "color": "#E65100"
+    },
+    "medium": {
+      "label_en": "Medium: Analytics Collection",
+      "label_ja": "中：分析データ収集",
+      "color": "#FF8F00"
+    }
+  }
+}

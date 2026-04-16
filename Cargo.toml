@@ -1,0 +1,41 @@
+[package]
+name = "halal-filter"
+version = "0.1.0"
+edition = "2021"
+description = "Privacy-focused DNS filtering engine targeting surveillance SDKs in Muslim apps"
+license = "MIT"
+authors = ["nur"]
+repository = "https://github.com/oginome/halal-filter"
+keywords = ["dns", "privacy", "filter", "android", "vpn"]
+categories = ["network-programming"]
+rust-version = "1.70"
+
+[lib]
+crate-type = ["lib", "cdylib", "staticlib"]
+
+[dependencies]
+xorf = { version = "0.11", features = ["serde"] }
+bincode = "1.3"
+serde = { version = "1", features = ["derive"] }
+log = "0.4"
+
+[target.'cfg(target_os = "android")'.dependencies]
+jni = { version = "0.21", default-features = false }
+android_logger = "0.14"
+
+[[bin]]
+name = "build_filter"
+path = "src/bin/build_filter.rs"
+
+[dev-dependencies]
+criterion = { version = "0.5", features = ["html_reports"] }
+
+[[bench]]
+name = "filter_bench"
+harness = false
+
+[profile.release]
+lto = true
+codegen-units = 1
+opt-level = 3
+strip = true

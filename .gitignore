@@ -1,0 +1,36 @@
+# Rust
+/target/
+Cargo.lock
+
+# Android
+android/.gradle/
+android/build/
+android/app/build/
+android/local.properties
+android/app/src/main/jniLibs/
+android/app/src/main/assets/filter.bin
+
+# Pre-built binaries (generated from source)
+data/trackers/*.bin
+
+# IDE
+.idea/
+*.iml
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment
+.env
+.env.local
+.env*.local
+
+# Logs
+*.log
+
+# Editor
+*.swp
+*~
+CLAUDE.md

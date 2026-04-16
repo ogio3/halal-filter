@@ -1,0 +1,203 @@
+# Halal Filter — Islamic App Tracker Domains
+#
+# Curated from real-world audit of 21 Muslim lifestyle apps.
+# Sources:
+# - Muslim-App-Audits (2026): Static + dynamic analysis of 21 apps
+# - Vice Motherboard (2020): Muslim Pro / X-Mode SDK
+# - Haaretz (2020): Salaat First / Predicio SDK
+# - FTC enforcement: Kochava location data sales
+# - DuckDuckGo Tracker Radar, AdGuard DNS filter research
+#
+# Format: plain domain list. Subdomain matching applies automatically.
+# Priority levels: P0 = data brokers/surveillance, P1 = trackers, P2 = ads
+
+# =============================================================================
+# P0: LOCATION DATA BROKERS — Direct pipeline to intelligence agencies
+# =============================================================================
+
+# X-Mode SDK — Sold Muslim location data to US military (Vice 2020)
+# Found in: Muslim Pro, Muslim Mingle, 400+ apps
+xmode.io
+
+# Predicio — French broker, pipeline: Predicio → Venntel → CBP/ICE/FBI
+# Found in: Salaat First, Qibla Connect
+predicio.fr
+
+# CellRebel — Persistent location tracking SDK
+# Found in: Salaat First (replacement for Predicio after exposure)
+# Evidence: Crashes intentionally hidden from Firebase Crashlytics
+cellrebel.com
+metricreceiver.cellrebel.com
+
+# Kochava — FTC sued Aug 2022 for selling location data to identify
+# religious affiliations. Found in prayer app Athan Pro.
+kochava.com
+location.api.kochava.com
+token.api.kochava.com
+kvinit-prod.api.kochava.com
+control.kochava.com
+imp.control.kochava.com
+
+# Babel Street / Locate X — Geolocation surveillance without warrants
+babelstreet.com
+locatex.babelstreet.com
+
+# Gravy Analytics / Venntel — Direct pipeline to US federal agencies
+gravyanalytics.com
+venntel.com
+
+# Tutela — Network measurement / location harvesting, defense sector
+tutela.com
+
+# Cuebiq — Location analytics, X-Mode data supply chain partner
+cuebiq.com
+
+# =============================================================================
+# P0: CHINESE TECH SURVEILLANCE — State-linked data collection
+# Found in Muslim Pro, Mustakshif, and others
+# =============================================================================
+
+# ByteDance / TikTok Pangle — Ad SDK tracking halal food scans (Mustakshif)
+# and serving ads in Muslim Pro. Chinese government-tied company.
+pangle.io
+api16-access-sg.pangle.io
+api16-access-ttp.tiktokpangle.us
+lf-static.tiktokpangle-cdn-us.com
+sf16-scmcdn-sg.ibytedtos.com
+
+# Tencent IMSDK — Instant messaging SDK in Muslim Pro
+# Routes through Hong Kong servers
+im.sdk.qcloud.com
+sdk-im-1252463788.cos.ap-hongkong.myqcloud.com
+
+# Alibaba / Alipay — Payment/ad SDK in Muslim Pro
+imgs-sea.alipay.com
+imdap-sea.alipay.com
+
+# Huawei OpenLocation — Location service
+openlocation-dra.platform.dbankcloud.com
+
+# =============================================================================
+# P0: SMARTECH METRICS — Behavioral analytics SDK
+# =============================================================================
+smartechmetrics.com
+
+# =============================================================================
+# P1: ATTRIBUTION & ANALYTICS — Device fingerprinting, cross-app tracking
+# =============================================================================
+
+# Adjust — Device fingerprinting across Muslim Pro, Muzz, and many others
+# Uses sec_did (unresettable device ID)
+adjust.com
+
+# AppsFlyer — Mobile attribution, found in Muslim Pro
+appsflyer.com
+
+# Branch.io — Deep linking + attribution, found in Muzz
+branch.io
+api2.branch.io
+cdn.branch.io
+
+# Mixpanel — User analytics with 30-second flush interval (Muzz)
+mixpanel.com
+api.mixpanel.com
+decide.mixpanel.com
+
+# Segment — Customer data platform
+segment.io
+api.segment.io
+cdn.segment.io
+
+# MoEngage — Push + analytics, found in Muzz
+moengage.com
+sdk.moengage.com
+api.moengage.com
+
+# Flagsmith — Feature flags with tracking
+flagsmith.com
+realtime.flagsmith.com
+
+# OneSignal — Push notifications with tracking
+onesignal.com
+
+# Braze (formerly Appboy) — Behavioral tracking, found in Muslim Pro
+braze.com
+sdk.braze.com
+
+# =============================================================================
+# P1: FACEBOOK / META — Cross-app tracking via SDK
+# Found in nearly every audited app
+# =============================================================================
+graph.facebook.com
+pixel.facebook.com
+an.facebook.com
+connect.facebook.net
+
+# =============================================================================
+# P1: GOOGLE ANALYTICS / FIREBASE — Telemetry collection
+# Note: Firebase core push may be needed; block analytics endpoints only
+# =============================================================================
+analytics.google.com
+app-measurement.com
+firebaselogging.googleapis.com
+firebaselogging-pa.googleapis.com
+firebase-settings.crashlytics.com
+
+# =============================================================================
+# P2: ADVERTISING NETWORKS
+# =============================================================================
+
+# Google Ads / DoubleClick
+ad.doubleclick.net
+pubads.g.doubleclick.net
+pagead2.googlesyndication.com
+googleadservices.com
+adservice.google.com
+
+# AppLovin — Ad mediation, found in multiple apps
+applovin.com
+sts.applovin.com
+a.applovin.com
+d.applovin.com
+
+# Jixie — Prebid ad exchange
+jixie.io
+hb.jixie.io
+
+# Unity Ads
+unityads.unity3d.com
+auction.unityads.unity3d.com
+config.unityads.unity3d.com
+
+# ironSource / Supersonic
+supersonicads.com
+outcome-ssp.supersonicads.com
+is.supersonicads.com
+
+# AdColony
+adcolony.com
+ads.adcolony.com
+events3alt.adcolony.com
+
+# MoPub (Twitter)
+mopub.com
+ads.mopub.com
+
+# InMobi — Common in South Asian Muslim apps
+inmobi.com
+
+# Criteo — Retargeting
+criteo.com
+sslwidget.criteo.com
+bidder.criteo.com
+
+# =============================================================================
+# P2: MATCH GROUP INFRASTRUCTURE — Secret Salams acquisition
+# Salams (7.5M+ Muslim dating users) secretly acquired by Match Group
+# (Tinder parent) Oct 2023 with ZERO user notification.
+# User data (religion, ethnicity, GPS) transferred to 27 dating brands.
+# =============================================================================
+# Note: Blocking these may break Salams app functionality.
+# Users should be WARNED rather than silently blocked.
+# match.com
+# match.custhelp.com
